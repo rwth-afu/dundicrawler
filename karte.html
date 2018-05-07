@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 	<title>Open Street Map Karten im Hamnet DB0SDA RWTH Aachen Ham Radio</title>
 
 	<link rel="stylesheet" href="leaflet.css" />
@@ -29,7 +30,7 @@ function getLoadTime(osmurl,fn)
 //  alert("image " + osmurl + " took " + loadtime + "ms to load");
     fn(loadtime, osmurl);
   };
-  img.src = "http://" + osmurl + "/14/10/100.png";
+  img.src = osmurl + "/14/10/100.png";
   setTimeout
   (
     function()
@@ -45,7 +46,6 @@ function getLoadTime(osmurl,fn)
 
 	
       var $loadbal_servers_url = 'osmloadbalservers.php';
-//    var loadbalservers = ["db0sda", "yacy.db0sda", "karten.db0sda", "srv.db0ii.as64634.de"];
       var numberprocessedserver = 0;
       var loadbalserver_num = 0;
       $.get($loadbal_servers_url,
@@ -73,7 +73,7 @@ function getLoadTime(osmurl,fn)
 
 	function showOSMMap(loadbalancingservers) {
 
-		var osmUrl = 'http://{s}/{z}/{x}/{y}.png',
+		var osmUrl = '{s}/{z}/{x}/{y}.png',
 		osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 		osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib, subdomains : loadbalancingservers }),
 		map = new L.Map('map', {layers: [osm], center: new L.LatLng(50, 9), zoom: 4 });

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # DUNDi Crawler von Ralf Wilke DH3WR
-# Version 0.21
+# Version 0.22
 # Lizenz:  CC BY-NC-SA http://creativecommons.org/licenses/by-nc-sa/3.0/
 
 no warnings;
@@ -10,6 +10,8 @@ use LWP::UserAgent;
 use DBI;
 use Data::Dumper;
 use Socket;
+use Scalar::Util qw(looks_like_number);
+use Data::Validate::IP;
 
 my @asteriskhosts;
 my @dundipeers;
@@ -117,7 +119,7 @@ sub ProcessAsteriskHostContact {
   my $website_content;
 
   my $ua = LWP::UserAgent->new;
-  $ua->agent('DundiCrawler/0.21 by Ralf Wilke DH3WR');
+  $ua->agent('DundiCrawler/0.22 by Ralf Wilke DH3WR');
   $ua->timeout(1);
   $ua->protocols_allowed( ['http'] );
 
@@ -160,7 +162,7 @@ sub ProcessAsteriskHost {
   my $website_content;
 
   my $ua = LWP::UserAgent->new;
-  $ua->agent('DundiCrawler/0.20 by Ralf Wilke DH3WR');
+  $ua->agent('DundiCrawler/0.22 by Ralf Wilke DH3WR');
   $ua->timeout(1);
   $ua->protocols_allowed( ['http'] );
 
@@ -177,9 +179,23 @@ sub ProcessAsteriskHost {
 #      print $line;
       my @values = split ' ', $line;
       my $dundiMAC = $values[0];
+      
       my $dundiIP = $values[1];
+      my $validator=Data::Validate::IP->new;
+      if (not ($validator->is_ipv4($dundiIP))) {
+        $dundiIP = "-";
+      }
+
       my $dundiPort = $values[3];
+      if (not (looks_like_number($dundiPort))) { 
+        $dundiPort = "-";
+      }
+
       my $dundiStatus = $values[6];
+      if (not ($dundiStatus eq "OK" || $dundiStatus eq "UNREACHABLE")) {
+        $dundiStatus = "-";
+      }
+
       my $dundiPeerTime = "-1";
       if ($dundiStatus eq "OK") { 
         $dundiPeerTime = $values[7];
@@ -297,7 +313,7 @@ sub WriteMapOverlay {
 				foreach (@asteriskhosts) {
 					if ($_->{ip} eq $peer_ip)
 					{
-						print $fh "</td><td style=\"text-align:right\">";
+						print $fh "<td style=\"text-align:right\">";
 						print $fh "<a href=\"http://hamnetdb.net/?q=$_->{name}\" target=\"_blank\">$_->{name}.ampr.org</a>";
 						print $fh "</td></tr>";
 					}
@@ -419,7 +435,8 @@ sub WriteHostsWithProblems {
 	print $fh '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
 	print $fh "\n"; print $fh '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de-de" lang="de-de"><html>';
 	print $fh "\n"; print $fh '<head>';
-	print $fh "\n"; print $fh '<title>DUNDi Netzübersicht - Legende</title>';
+        print $fh "\n"; print $fh '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">';
+	print $fh "\n"; print $fh '<title>DUNDi Netzuebersicht - Legende</title>';
 	print $fh "\n"; print $fh '  <link rel="stylesheet" href="/media/jui/css/icomoon.css" type="text/css" />';
 	print $fh "\n"; print $fh '  <link rel="stylesheet" href="/templates/system/css/system.css" type="text/css" />';
 	print $fh "\n"; print $fh '  <link rel="stylesheet" href="/templates/system/css/general.css" type="text/css" />';
